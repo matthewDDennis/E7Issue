@@ -21,14 +21,14 @@ namespace EF7Issue
             {
                 b.Table("Article");
                 b.Key(a => a.Id);
-                b.Property(a => a.Id).Column("ArticleId").StoreGeneratedPattern(StoreGeneratedPattern.Identity);
+                b.Property(a => a.Id).Column("ArticleId").ForSqlServer().UseIdentity();
             });
 
             modelBuilder.Entity<Member>(b =>
             {
                 b.Table("Member");
                 b.Key(m => m.Id);
-                b.Property(m => m.Id).Column("MemberId").StoreGeneratedPattern(StoreGeneratedPattern.Identity);
+                b.Property(m => m.Id).Column("MemberId").ForSqlServer().UseIdentity();
                 b.Property(m => m.UserProfileId).Column("NetworkUserProfileId");
                 b.Property(m => m.Name).Column("Name");
             });
@@ -37,8 +37,8 @@ namespace EF7Issue
             {
                 b.Table("Article_Member");
                 b.Key(am => new { am.ArticleId, am.MemberId });
-                b.Property(am => am.ArticleId).ForSqlServer().Column("ArticleId").UseNoValueGeneration();
-                b.Property(am => am.MemberId).ForSqlServer().Column("MemberId").UseNoValueGeneration();
+                b.Property(am => am.ArticleId).Column("ArticleId").ForSqlServer().UseNoValueGeneration();
+                b.Property(am => am.MemberId).Column("MemberId").ForSqlServer().UseNoValueGeneration();
                 b.Reference(am => am.Article).InverseCollection(a => a.Authors)
                                               .ForeignKey(am => am.ArticleId)
                                               .PrincipalKey(a => a.Id);
