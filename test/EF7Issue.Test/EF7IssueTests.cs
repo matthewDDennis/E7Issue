@@ -49,7 +49,8 @@ namespace EF7Issue.Test
         }
 
         // This test fails
-        [Fact] async void GetLatestArticlesIncludesAuthors()
+        [Fact]
+        public async void GetLatestArticlesIncludesAuthors()
         {
             await InitializeDatabase();
             IArticleQuery articleQuery = _serviceProvider.GetRequiredService<IArticleQuery>();
@@ -69,7 +70,7 @@ namespace EF7Issue.Test
 
         // This test fails
         [Fact]
-        async void GetLatest2ArticlesIncludesAuthors()
+        public async void GetLatest2ArticlesIncludesAuthors()
         {
             await InitializeDatabase();
             IArticleQuery articleQuery = _serviceProvider.GetRequiredService<IArticleQuery>();
@@ -87,11 +88,39 @@ namespace EF7Issue.Test
             }
         }
 
+        // This test fails
+        [Fact]
+        public async void OrderOfForSqlDoesNotMatter()
+        {
+            await InitializeDatabase();
+            for (int i = 1; i <= 3; i++)
+            {
+                _dbContext.BadIdenties.Add(new BadIdentity { Name = $"BadIdentity{i}" });
+            }
+            _dbContext.SaveChanges();
+
+            for (int i = 1; i <= 3; i++)
+            {
+                var badIdentity = _dbContext.BadIdenties.AsNoTracking().SingleOrDefaultAsync(bi => bi.Id == i);
+                Assert.NotNull(badIdentity);
+            }
+
+            var entityType     = _dbContext.Model.GetEntityType(typeof(BadIdentity));
+            var idProperty     = entityType.GetProperty("Id");
+            var relationalName = idProperty.Relational().Column;
+            var sqlName        = idProperty.SqlServer().Column;
+
+            Assert.Equal("BadIdentityId", relationalName);
+            Assert.Equal("BadIdentityId", sqlName);
+            var relationalColumType = idProperty.Relational().ColumnType;
+            var sqlColumType        = idProperty.SqlServer().ColumnType;
+
+        }
+
         private async Task InitializeDatabase()
         {
-            await _dbContext.Database.EnsureCreatedAsync();
-            int articleCount = await _dbContext.Articles.CountAsync();
-            if (articleCount != 3)
+            await _dbContext.Database.EnsureDeletedAsync();
+            if (await _dbContext.Database.EnsureCreatedAsync())
             {
                 // Create Articles
                 for (int i = 1; i <= 3; i++)
@@ -123,7 +152,7 @@ namespace EF7Issue.Test
 
                 // Associate Authors with articles
                 var articles = await _dbContext.Articles.ToArrayAsync();
-                var members = await _dbContext.Members.ToArrayAsync();
+                var members  = await _dbContext.Members.ToArrayAsync();
 
                 for (int i = 0; i < 3; i++)
                 {

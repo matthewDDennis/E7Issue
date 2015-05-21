@@ -9,6 +9,7 @@ namespace EF7Issue
         public DbSet<Article>          Articles        { get; set; }
         public DbSet<Member>           Members         { get; set; }
         public DbSet<ArticleMember>    ArticleMembers  { get; set; }
+        public DbSet<BadIdentity>      BadIdenties     { get; set; }
 
         public ArticleDbContext(DbContextOptions<ArticleDbContext> options) 
             : base(options)
@@ -45,6 +46,14 @@ namespace EF7Issue
                 b.Reference(am => am.Member).InverseCollection(m => m.Articles)
                                             .ForeignKey(am => am.MemberId)
                                             .PrincipalKey(m => m.Id);
+            });
+
+            // Demo issue with ForSqlServer
+            modelBuilder.Entity<BadIdentity>(b =>
+            {
+                b.Table("BadIdentity");
+                b.Key(bi => bi.Id);
+                b.Property(bi => bi.Id).ForSqlServer().Column("BadIdentityId").UseIdentity();
             });
 
             base.OnModelCreating(modelBuilder);
