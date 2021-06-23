@@ -5,3 +5,6 @@ keywords: .net, entityframeworkcore, include
 ---
 # E7Issue
 Tests to illustrate problems with Included tables
+
+[I'm a link](anotherdoc.md)
+
